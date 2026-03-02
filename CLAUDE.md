@@ -8,7 +8,23 @@ Personal website (`kt`). Repository: https://github.com/ltx-kt/kt.git
 
 ## Status
 
-Project is in initial setup — no build system, framework, or application code exists yet. When a tech stack is chosen and files are added, update this file with build/test/lint commands and architecture notes.
+Angular (v21) personal website. TypeScript, standalone components, SCSS styling.
+
+### Commands
+
+```bash
+npm start          # dev server at http://localhost:4200
+npm run build      # production build → dist/kt/browser/
+npm test           # unit tests (Karma + Jasmine)
+```
+
+### Architecture
+
+- `src/app/app.ts` — root standalone component
+- `src/app/app.html` — homepage template
+- `src/app/app.scss` — homepage styles (BEM: `.person`)
+- `src/styles.scss` — global styles / reset
+- `src/index.html` — HTML shell (page title, font imports)
 
 ## Workflow
 
