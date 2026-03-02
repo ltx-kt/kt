@@ -1,21 +1,54 @@
 :host {
   display: block;
-  height: 100vh;
 }
 
-.person {
-  height: 100%;
+/* ── Scroll driver ── */
+.scroll-container {
+  height: 400vh;
+}
+
+/* ── Fixed viewport stage ── */
+.scene {
+  position: fixed;
+  inset: 0;
+  perspective: 1500px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1a2e 100%);
+  overflow: hidden;
+  background: #0d0d1a;
 }
 
-.person__content {
+/* ── Cube ── */
+.cube {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+/* ── Faces ── */
+.cube__face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+}
+
+.cube__face--front  { transform: rotateX(  0deg) translateZ(50vh); background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1a2e 100%); }
+.cube__face--top    { transform: rotateX( 90deg) translateZ(50vh); background: linear-gradient(135deg, #0d1a0d 0%, #0a2e1a 50%, #0d1a2e 100%); }
+.cube__face--back   { transform: rotateX(180deg) translateZ(50vh); background: linear-gradient(135deg, #1a0d0a 0%, #2e180a 50%, #1a0a0d 100%); }
+.cube__face--bottom { transform: rotateX(-90deg) translateZ(50vh); background: linear-gradient(135deg, #0a0d1a 0%, #0a102e 50%, #0a1a2e 100%); }
+
+/* ── Face content ── */
+.face-content {
   text-align: center;
-  animation: fadeUp 0.8s ease both;
+  padding: 2rem;
 }
 
+/* Hero face */
 .person__name {
   font-size: clamp(3rem, 8vw, 7rem);
   font-weight: 700;
@@ -36,13 +69,20 @@
   margin: 0;
 }
 
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Other faces */
+.section__title {
+  font-size: clamp(2rem, 6vw, 5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin: 0 0 1rem;
+}
+
+.section__body {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.6);
+  max-width: 540px;
+  line-height: 1.7;
+  margin: 0 auto;
 }
