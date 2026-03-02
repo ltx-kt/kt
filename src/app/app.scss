@@ -40,9 +40,9 @@
 }
 
 .cube__face--front  { transform: rotateX(  0deg) translateZ(50vmin); background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1a2e 100%); }
-.cube__face--top    { transform: rotateX( 90deg) translateZ(50vmin); background: linear-gradient(135deg, #0d1a0d 0%, #0a2e1a 50%, #0d1a2e 100%); }
-.cube__face--back   { transform: rotateX(180deg) translateZ(50vmin); background: linear-gradient(135deg, #1a0d0a 0%, #2e180a 50%, #1a0a0d 100%); }
-.cube__face--bottom { transform: rotateX(-90deg) translateZ(50vmin); background: linear-gradient(135deg, #0a0d1a 0%, #0a102e 50%, #0a1a2e 100%); }
+.cube__face--top    { transform: rotateX( 90deg) translateZ(50vmin); background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1a2e 100%); }
+.cube__face--back   { transform: rotateX(180deg) translateZ(50vmin); background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1a2e 100%); }
+.cube__face--bottom { transform: rotateX(-90deg) translateZ(50vmin); background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1a2e 100%); }
 
 /* ── Face content ── */
 .face-content {
