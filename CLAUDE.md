@@ -12,10 +12,24 @@ Project is in initial setup — no build system, framework, or application code 
 
 ## Workflow
 
-After adding or modifying any file, commit the changes and push to the remote:
+For every change, follow this branch-based workflow:
 
-```bash
-git add <changed files>
-git commit -m "<descriptive message>"
-git push
-```
+1. Create a new branch from `main` with a short descriptive name:
+   ```bash
+   git checkout main
+   git pull
+   git checkout -b <branch-name>
+   ```
+2. Make the changes.
+3. Commit and push the branch:
+   ```bash
+   git add <changed files>
+   git commit -m "<descriptive message>"
+   git push -u origin <branch-name>
+   ```
+4. Open a pull request targeting `main`:
+   ```bash
+   gh pr create --base main --title "<title>" --body "<summary>"
+   ```
+
+Do NOT merge the PR. The user will review and merge manually.
