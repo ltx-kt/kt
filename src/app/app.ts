@@ -18,7 +18,7 @@ export class App implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     const cube = this.cubeRef.nativeElement;
 
-    gsap.set(cube, { scale: 0.35 });
+    gsap.set(cube, { scale: 0.35, scaleZ: 0.35 });
 
     const tl = gsap.timeline({
       scrollTrigger: {
@@ -39,7 +39,7 @@ export class App implements AfterViewInit, OnDestroy {
     this.wheelListener = () => {
       if (this.zoomed) {
         this.zoomed = false;
-        gsap.to(cube, { scale: 0.35, duration: 0.5, ease: 'power2.inOut' });
+        gsap.to(cube, { scale: 0.35, scaleZ: 0.35, duration: 0.5, ease: 'power2.inOut' });
       }
     };
     window.addEventListener('wheel', this.wheelListener, { passive: true });
@@ -48,7 +48,7 @@ export class App implements AfterViewInit, OnDestroy {
   onSceneClick(): void {
     if (!this.zoomed) {
       this.zoomed = true;
-      gsap.to(this.cubeRef.nativeElement, { scale: 1, duration: 0.8, ease: 'power2.inOut' });
+      gsap.to(this.cubeRef.nativeElement, { scale: 1, scaleZ: 1, duration: 0.8, ease: 'power2.inOut' });
     }
   }
 
