@@ -11,7 +11,8 @@
 .scene {
   position: fixed;
   inset: 0;
-  perspective: 1500px;
+  perspective: 800px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -21,8 +22,8 @@
 
 /* ── Cube ── */
 .cube {
-  width: 100vw;
-  height: 100vh;
+  width: 100vmin;
+  height: 100vmin;
   position: relative;
   transform-style: preserve-3d;
 }
@@ -35,12 +36,13 @@
   align-items: center;
   justify-content: center;
   backface-visibility: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.cube__face--front  { transform: rotateX(  0deg) translateZ(50vh); background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1a2e 100%); }
-.cube__face--top    { transform: rotateX( 90deg) translateZ(50vh); background: linear-gradient(135deg, #0d1a0d 0%, #0a2e1a 50%, #0d1a2e 100%); }
-.cube__face--back   { transform: rotateX(180deg) translateZ(50vh); background: linear-gradient(135deg, #1a0d0a 0%, #2e180a 50%, #1a0a0d 100%); }
-.cube__face--bottom { transform: rotateX(-90deg) translateZ(50vh); background: linear-gradient(135deg, #0a0d1a 0%, #0a102e 50%, #0a1a2e 100%); }
+.cube__face--front  { transform: rotateX(  0deg) translateZ(50vmin); background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1a2e 100%); }
+.cube__face--top    { transform: rotateX( 90deg) translateZ(50vmin); background: linear-gradient(135deg, #0d1a0d 0%, #0a2e1a 50%, #0d1a2e 100%); }
+.cube__face--back   { transform: rotateX(180deg) translateZ(50vmin); background: linear-gradient(135deg, #1a0d0a 0%, #2e180a 50%, #1a0a0d 100%); }
+.cube__face--bottom { transform: rotateX(-90deg) translateZ(50vmin); background: linear-gradient(135deg, #0a0d1a 0%, #0a102e 50%, #0a1a2e 100%); }
 
 /* ── Face content ── */
 .face-content {
