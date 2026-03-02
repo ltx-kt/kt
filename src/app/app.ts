@@ -12,6 +12,7 @@ gsap.registerPlugin(ScrollTrigger);
 })
 export class App implements AfterViewInit, OnDestroy {
   @ViewChild('cube') private cubeRef!: ElementRef<HTMLDivElement>;
+  @ViewChild('scene') private sceneRef!: ElementRef<HTMLDivElement>;
   private zoomed = false;
   private wheelListener!: (e: WheelEvent) => void;
 
@@ -19,6 +20,7 @@ export class App implements AfterViewInit, OnDestroy {
     const cube = this.cubeRef.nativeElement;
 
     gsap.set(cube, { scale: 0.35, scaleZ: 0.35 });
+    gsap.set(this.sceneRef.nativeElement, { css: { perspective: '4000px' } });
 
     const tl = gsap.timeline({
       scrollTrigger: {
@@ -40,6 +42,7 @@ export class App implements AfterViewInit, OnDestroy {
       if (this.zoomed) {
         this.zoomed = false;
         gsap.to(cube, { scale: 0.35, scaleZ: 0.35, duration: 0.5, ease: 'power2.inOut' });
+        gsap.to(this.sceneRef.nativeElement, { css: { perspective: '4000px' }, duration: 0.5, ease: 'power2.inOut' });
       }
     };
     window.addEventListener('wheel', this.wheelListener, { passive: true });
@@ -49,6 +52,7 @@ export class App implements AfterViewInit, OnDestroy {
     if (!this.zoomed) {
       this.zoomed = true;
       gsap.to(this.cubeRef.nativeElement, { scale: 1, scaleZ: 1, duration: 0.8, ease: 'power2.inOut' });
+      gsap.to(this.sceneRef.nativeElement, { css: { perspective: '800px' }, duration: 0.8, ease: 'power2.inOut' });
     }
   }
 
