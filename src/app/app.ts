@@ -108,11 +108,17 @@ export class App implements AfterViewInit, OnDestroy {
     if (this.scrollProgress() < 0.5 || this.isAnimating()) return;
 
     this.pauseAutoRotate();
-    this.isAnimating.set(true);
-    this.activeFace.set(faceIndex);
+
+    // Snap to the nearest face so we zoom into a full page, not a split
+    const totalRotation = this.activeFace() * -90 + this.scrollRotation() + this.idleRotation;
+    const nearestFace = Math.round(-totalRotation / 90);
+    this.activeFace.set(nearestFace);
+    this.scrollRotation.set(0);
     this.idleRotation = 0;
     this.idleRotationSignal.set(0);
-    this.scrollRotation.set(0);
+
+    // Animate snap + zoom together
+    this.isAnimating.set(true);
     this.scrollProgress.set(0);
 
     // Fallback in case transitionend doesn't fire
