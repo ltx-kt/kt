@@ -177,18 +177,12 @@ export class Cube implements AfterViewInit, OnDestroy {
 
     this.pauseAutoRotate();
 
-    // Snap X rotation to the nearest face
-    const totalRotationX = this.activeFace() * -90 + this.scrollRotation() + this.idleRotation;
-    const nearestFace = Math.round(-totalRotationX / 90);
-    this.activeFace.set(nearestFace);
+    // Zoom into the clicked face
+    this.activeFace.set(faceIndex);
     this.scrollRotation.set(0);
     this.idleRotation = 0;
     this.idleRotationSignal.set(0);
-
-    // Snap Y rotation to the nearest 90°
-    const totalRotationY = this.scrollRotationY();
-    const snappedY = Math.round(totalRotationY / 90) * 90;
-    this.scrollRotationY.set(snappedY);
+    this.scrollRotationY.set(0);
 
     // Animate snap + zoom together
     this.isAnimating.set(true);

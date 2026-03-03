@@ -182,18 +182,7 @@ describe('Cube', () => {
       expect(cube.idleRotationSignal()).toBe(0);
     });
 
-    it('should snap Y rotation to nearest 90 degrees', () => {
-      const fixture = TestBed.createComponent(Cube);
-      const cube = fixture.componentInstance;
-      fixture.detectChanges();
-      cube.scrollProgress.set(1);
-      cube.scrollRotationY.set(40);
-
-      cube.onFaceClick(0);
-      expect(cube.scrollRotationY()).toBe(0);
-    });
-
-    it('should snap Y rotation to 90 when closer to 90', () => {
+    it('should reset Y rotation to 0', () => {
       const fixture = TestBed.createComponent(Cube);
       const cube = fixture.componentInstance;
       fixture.detectChanges();
@@ -201,7 +190,7 @@ describe('Cube', () => {
       cube.scrollRotationY.set(50);
 
       cube.onFaceClick(0);
-      expect(cube.scrollRotationY()).toBe(90);
+      expect(cube.scrollRotationY()).toBe(0);
     });
 
     it('should not zoom in when scrollProgress is below 0.5', () => {
@@ -225,16 +214,15 @@ describe('Cube', () => {
       expect(cube.scrollProgress()).toBe(1);
     });
 
-    it('should snap activeFace to nearest face based on total rotation', () => {
+    it('should set activeFace to the clicked face index', () => {
       const fixture = TestBed.createComponent(Cube);
       const cube = fixture.componentInstance;
       fixture.detectChanges();
       cube.scrollProgress.set(1);
       cube.activeFace.set(0);
-      cube.scrollRotation.set(-85); // close to face 1 (-90°)
 
-      cube.onFaceClick(0);
-      expect(cube.activeFace()).toBe(1);
+      cube.onFaceClick(2);
+      expect(cube.activeFace()).toBe(2);
     });
 
     it('should clear isAnimating after fallback timeout', () => {
