@@ -10,7 +10,7 @@ const MAX_SCROLL = 5.0;
   styleUrl: './app.scss',
 })
 export class App implements AfterViewInit {
-  scrollProgress = signal(0);
+  scrollProgress = signal(1);
   activeFace = signal(0);
   isAnimating = signal(false);
 
