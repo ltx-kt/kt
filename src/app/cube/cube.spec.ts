@@ -150,23 +150,30 @@ describe('Cube', () => {
 
   describe('onFaceClick', () => {
     it('should zoom in (set scrollProgress to 0) when in cube view', () => {
+      vi.useFakeTimers();
       const fixture = TestBed.createComponent(Cube);
       const cube = fixture.componentInstance;
       fixture.detectChanges();
       cube.scrollProgress.set(1);
 
       cube.onFaceClick(0);
+      vi.advanceTimersByTime(16);
       expect(cube.scrollProgress()).toBe(0);
+      vi.useRealTimers();
     });
 
-    it('should set isAnimating to true', () => {
+    it('should set isAnimating to true after snap renders', () => {
+      vi.useFakeTimers();
       const fixture = TestBed.createComponent(Cube);
       const cube = fixture.componentInstance;
       fixture.detectChanges();
       cube.scrollProgress.set(1);
 
       cube.onFaceClick(0);
+      expect(cube.isAnimating()).toBe(false);
+      vi.advanceTimersByTime(16);
       expect(cube.isAnimating()).toBe(true);
+      vi.useRealTimers();
     });
 
     it('should reset scrollRotation and idleRotationSignal', () => {
@@ -233,6 +240,7 @@ describe('Cube', () => {
       cube.scrollProgress.set(1);
 
       cube.onFaceClick(0);
+      vi.advanceTimersByTime(16);
       expect(cube.isAnimating()).toBe(true);
 
       vi.advanceTimersByTime(700);
