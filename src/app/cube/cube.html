@@ -21,5 +21,19 @@
       <app-contact />
     </div>
 
+    <!-- Left: Placeholder -->
+    <div class="cube__face cube__face--left" (click)="onFaceClick(4)">
+      <app-placeholder />
+    </div>
+
+    <!-- Right: Placeholder -->
+    <div class="cube__face cube__face--right" (click)="onFaceClick(5)">
+      <app-placeholder />
+    </div>
+
   </div>
+
+  @if (isExpanded()) {
+    <button class="back-button" (click)="zoomOut()">&#8592;</button>
+  }
 </div>

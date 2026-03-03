@@ -30,11 +30,11 @@ describe('Cube', () => {
       expect(el.querySelector('.person__role')?.textContent).toContain('Software Engineer');
     });
 
-    it('should render all four cube faces', () => {
+    it('should render all six cube faces', () => {
       const fixture = TestBed.createComponent(Cube);
       fixture.detectChanges();
       const faces = fixture.nativeElement.querySelectorAll('.cube__face');
-      expect(faces.length).toBe(4);
+      expect(faces.length).toBe(6);
     });
 
     it('should render About, Projects, and Contact headings', () => {
@@ -42,7 +42,7 @@ describe('Cube', () => {
       fixture.detectChanges();
       const headings = fixture.nativeElement.querySelectorAll('.face-heading');
       const texts = Array.from(headings).map((h: any) => h.textContent.trim());
-      expect(texts).toEqual(['About', 'Projects', 'Contact']);
+      expect(texts).toEqual(['About', 'Projects', 'Contact', '?', '?']);
     });
 
     it('should render the GitHub link with correct href', () => {
@@ -112,6 +112,24 @@ describe('Cube', () => {
     });
   });
 
+  describe('cubeRotationY', () => {
+    it('should be 0 when scrollProgress < 1', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      cube.scrollProgress.set(0.5);
+      cube.scrollRotationY.set(45);
+      expect(cube.cubeRotationY()).toBe(0);
+    });
+
+    it('should return scrollRotationY when scrollProgress is 1', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      cube.scrollProgress.set(1);
+      cube.scrollRotationY.set(45);
+      expect(cube.cubeRotationY()).toBe(45);
+    });
+  });
+
   describe('isExpanded', () => {
     it('should be true when scrollProgress is 0', () => {
       const fixture = TestBed.createComponent(Cube);
@@ -125,66 +143,6 @@ describe('Cube', () => {
       const cube = fixture.componentInstance;
       cube.scrollProgress.set(0.1);
       expect(cube.isExpanded()).toBe(false);
-    });
-  });
-
-  // ── Wheel interaction ───────────────────────────────────────────────────────
-
-  describe('onWheel', () => {
-    it('should increase scrollProgress when scrolling down during zoom phase', () => {
-      const fixture = TestBed.createComponent(Cube);
-      const cube = fixture.componentInstance;
-      cube.scrollProgress.set(0.5);
-
-      cube.onWheel(new WheelEvent('wheel', { deltaY: 100 }));
-      expect(cube.scrollProgress()).toBeGreaterThan(0.5);
-    });
-
-    it('should decrease scrollProgress when scrolling up during zoom phase', () => {
-      const fixture = TestBed.createComponent(Cube);
-      const cube = fixture.componentInstance;
-      cube.scrollProgress.set(0.5);
-
-      cube.onWheel(new WheelEvent('wheel', { deltaY: -100 }));
-      expect(cube.scrollProgress()).toBeLessThan(0.5);
-    });
-
-    it('should clamp scrollProgress to 0 minimum', () => {
-      const fixture = TestBed.createComponent(Cube);
-      const cube = fixture.componentInstance;
-      cube.scrollProgress.set(0);
-
-      cube.onWheel(new WheelEvent('wheel', { deltaY: -9999 }));
-      expect(cube.scrollProgress()).toBe(0);
-    });
-
-    it('should clamp scrollProgress to 1 maximum during zoom phase', () => {
-      const fixture = TestBed.createComponent(Cube);
-      const cube = fixture.componentInstance;
-      cube.scrollProgress.set(0.99);
-
-      cube.onWheel(new WheelEvent('wheel', { deltaY: 9999 }));
-      expect(cube.scrollProgress()).toBe(1);
-    });
-
-    it('should rotate cube when scrollProgress is 1', () => {
-      const fixture = TestBed.createComponent(Cube);
-      const cube = fixture.componentInstance;
-      cube.scrollProgress.set(1);
-      cube.scrollRotation.set(0);
-
-      cube.onWheel(new WheelEvent('wheel', { deltaY: 100 }));
-      expect(cube.scrollRotation()).not.toBe(0);
-    });
-
-    it('should ignore wheel events while animating', () => {
-      const fixture = TestBed.createComponent(Cube);
-      const cube = fixture.componentInstance;
-      cube.scrollProgress.set(0.5);
-      cube.isAnimating.set(true);
-
-      cube.onWheel(new WheelEvent('wheel', { deltaY: 100 }));
-      expect(cube.scrollProgress()).toBe(0.5);
     });
   });
 
@@ -222,6 +180,28 @@ describe('Cube', () => {
       cube.onFaceClick(0);
       expect(cube.scrollRotation()).toBe(0);
       expect(cube.idleRotationSignal()).toBe(0);
+    });
+
+    it('should snap Y rotation to nearest 90 degrees', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      fixture.detectChanges();
+      cube.scrollProgress.set(1);
+      cube.scrollRotationY.set(40);
+
+      cube.onFaceClick(0);
+      expect(cube.scrollRotationY()).toBe(0);
+    });
+
+    it('should snap Y rotation to 90 when closer to 90', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      fixture.detectChanges();
+      cube.scrollProgress.set(1);
+      cube.scrollRotationY.set(50);
+
+      cube.onFaceClick(0);
+      expect(cube.scrollRotationY()).toBe(90);
     });
 
     it('should not zoom in when scrollProgress is below 0.5', () => {
@@ -270,6 +250,80 @@ describe('Cube', () => {
       vi.advanceTimersByTime(700);
       expect(cube.isAnimating()).toBe(false);
       vi.useRealTimers();
+    });
+  });
+
+  // ── Zoom out ─────────────────────────────────────────────────────────────────
+
+  describe('zoomOut', () => {
+    it('should set scrollProgress to 1 (cube view)', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      fixture.detectChanges();
+      cube.scrollProgress.set(0);
+
+      cube.zoomOut();
+      expect(cube.scrollProgress()).toBe(1);
+    });
+
+    it('should set isAnimating to true', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      fixture.detectChanges();
+      cube.scrollProgress.set(0);
+
+      cube.zoomOut();
+      expect(cube.isAnimating()).toBe(true);
+    });
+
+    it('should not act while already animating', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      fixture.detectChanges();
+      cube.scrollProgress.set(0);
+      cube.isAnimating.set(true);
+
+      cube.zoomOut();
+      expect(cube.scrollProgress()).toBe(0);
+    });
+
+    it('should clear isAnimating after fallback timeout', () => {
+      vi.useFakeTimers();
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      fixture.detectChanges();
+      cube.scrollProgress.set(0);
+
+      cube.zoomOut();
+      expect(cube.isAnimating()).toBe(true);
+
+      vi.advanceTimersByTime(700);
+      expect(cube.isAnimating()).toBe(false);
+      vi.useRealTimers();
+    });
+  });
+
+  // ── Back button template ──────────────────────────────────────────────────────
+
+  describe('back button', () => {
+    it('should show back button when expanded', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      cube.scrollProgress.set(0);
+      fixture.detectChanges();
+
+      const button = fixture.nativeElement.querySelector('.back-button');
+      expect(button).toBeTruthy();
+    });
+
+    it('should not show back button when in cube view', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      cube.scrollProgress.set(1);
+      fixture.detectChanges();
+
+      const button = fixture.nativeElement.querySelector('.back-button');
+      expect(button).toBeFalsy();
     });
   });
 

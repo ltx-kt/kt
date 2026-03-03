@@ -14,8 +14,9 @@
 // ─── Cube ────────────────────────────────────────────────────────────────────
 
 .cube {
-  width: 100vw;
+  width: 100vh;
   height: 100vh;
+  margin: 0 auto;
   position: relative;
   transform-style: preserve-3d;
   will-change: transform;
@@ -25,8 +26,8 @@
 
 .cube__face {
   position: absolute;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   top: 0;
   left: 0;
   display: flex;
@@ -61,4 +62,40 @@
 .cube__face--top {
   transform: rotateX(-90deg) translateZ(50vh);
   background: linear-gradient(135deg, #1a1a2e 0%, #182a45 50%, #2a451a 100%);
+}
+
+.cube__face--left {
+  transform: rotateY(-90deg) translateZ(50vh);
+  background: linear-gradient(135deg, #1a2a45 0%, #1a1845 50%, #2a1a45 100%);
+}
+
+.cube__face--right {
+  transform: rotateY(90deg) translateZ(50vh);
+  background: linear-gradient(135deg, #2a451a 0%, #451a2a 50%, #1a2a45 100%);
+}
+
+// ─── Back button ──────────────────────────────────────────────────────────────
+
+.back-button {
+  position: fixed;
+  top: 1.5rem;
+  left: 1.5rem;
+  z-index: 10;
+  background: rgba(167, 139, 250, 0.15);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  color: #a78bfa;
+  font-size: 1.5rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border-color 0.2s;
+
+  &:hover {
+    background: rgba(167, 139, 250, 0.3);
+    border-color: #a78bfa;
+  }
 }

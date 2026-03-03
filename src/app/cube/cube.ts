@@ -3,8 +3,8 @@ import { Home } from '../faces/home/home';
 import { About } from '../faces/about/about';
 import { Projects } from '../faces/projects/projects';
 import { Contact } from '../faces/contact/contact';
+import { Placeholder } from '../faces/placeholder/placeholder';
 
-const SCROLL_SENSITIVITY = 800;
 const DRAG_SENSITIVITY = 300; // pixels per 90° of rotation
 const DRAG_MOVE_THRESHOLD = 5; // pixels before a drag suppresses click
 const AUTO_ROTATE_SPEED = 0.08; // degrees per frame (~5°/sec at 60fps)
@@ -12,13 +12,14 @@ const IDLE_RESUME_DELAY = 2000; // ms before auto-rotation resumes after interac
 
 @Component({
   selector: 'app-cube',
-  imports: [Home, About, Projects, Contact],
+  imports: [Home, About, Projects, Contact, Placeholder],
   templateUrl: './cube.html',
   styleUrl: './cube.scss',
 })
 export class Cube implements AfterViewInit, OnDestroy {
   scrollProgress = signal(1);
   scrollRotation = signal(0);
+  scrollRotationY = signal(0);
   activeFace = signal(0);
   isAnimating = signal(false);
 
@@ -29,8 +30,10 @@ export class Cube implements AfterViewInit, OnDestroy {
   private animTimerId: ReturnType<typeof setTimeout> | null = null;
 
   private isDragging = false;
+  private dragStartX = 0;
   private dragStartY = 0;
   private dragStartRotation = 0;
+  private dragStartRotationY = 0;
   private dragStartProgress = 0;
   private dragMoved = false;
 
@@ -51,15 +54,14 @@ export class Cube implements AfterViewInit, OnDestroy {
     return this.scrollProgress() < 1 ? base : base + this.scrollRotation();
   });
 
-  cubeScaleX = computed(() => {
-    const p = this.scrollProgress();
-    const ratio = window.innerHeight / window.innerWidth;
-    return 1 + (ratio - 1) * p;
+  cubeRotationY = computed(() => {
+    return this.scrollProgress() < 1 ? 0 : this.scrollRotationY();
   });
 
   cubeTransform = computed(() => {
-    const rotation = this.cubeRotation() + this.idleRotationSignal();
-    return `scale(${this.cubeScale()}) scaleX(${this.cubeScaleX()}) rotateX(${rotation}deg)`;
+    const rotationX = this.cubeRotation() + this.idleRotationSignal();
+    const rotationY = this.cubeRotationY();
+    return `scale(${this.cubeScale()}) rotateX(${rotationX}deg) rotateY(${rotationY}deg)`;
   });
 
   idleRotationSignal = signal(0);
@@ -112,33 +114,16 @@ export class Cube implements AfterViewInit, OnDestroy {
     }, IDLE_RESUME_DELAY);
   }
 
-  @HostListener('wheel', ['$event'])
-  onWheel(event: WheelEvent): void {
-    event.preventDefault();
-    if (this.isAnimating()) return;
-
-    this.pauseAutoRotate();
-
-    const delta = event.deltaY / SCROLL_SENSITIVITY;
-    const current = this.scrollProgress();
-
-    if (current < 1) {
-      // Zooming phase: clamp between 0 and 1
-      this.scrollProgress.set(Math.max(0, Math.min(1, current + delta)));
-    } else {
-      // Cube view: unbounded rotation in both directions
-      this.scrollRotation.update(r => r + delta * 90);
-    }
-  }
-
   @HostListener('pointerdown', ['$event'])
   onPointerDown(event: PointerEvent): void {
     if (this.isAnimating()) return;
 
     this.isDragging = true;
     this.dragMoved = false;
+    this.dragStartX = event.clientX;
     this.dragStartY = event.clientY;
     this.dragStartRotation = this.scrollRotation();
+    this.dragStartRotationY = this.scrollRotationY();
     this.dragStartProgress = this.scrollProgress();
 
     this.pauseAutoRotate();
@@ -150,9 +135,10 @@ export class Cube implements AfterViewInit, OnDestroy {
   private onPointerMove(event: PointerEvent): void {
     if (!this.isDragging) return;
 
+    const deltaX = event.clientX - this.dragStartX;
     const deltaY = event.clientY - this.dragStartY;
 
-    if (Math.abs(deltaY) > DRAG_MOVE_THRESHOLD) {
+    if (Math.abs(deltaX) > DRAG_MOVE_THRESHOLD || Math.abs(deltaY) > DRAG_MOVE_THRESHOLD) {
       this.dragMoved = true;
     }
 
@@ -161,6 +147,7 @@ export class Cube implements AfterViewInit, OnDestroy {
       this.scrollProgress.set(Math.max(0, Math.min(1, this.dragStartProgress + progressDelta)));
     } else {
       this.scrollRotation.set(this.dragStartRotation + (deltaY / DRAG_SENSITIVITY) * 90);
+      this.scrollRotationY.set(this.dragStartRotationY + (-deltaX / DRAG_SENSITIVITY) * 90);
     }
   }
 
@@ -169,6 +156,16 @@ export class Cube implements AfterViewInit, OnDestroy {
     (event.target as Element)?.releasePointerCapture?.(event.pointerId);
     document.removeEventListener('pointermove', this.onPointerMoveBound);
     document.removeEventListener('pointerup', this.onPointerUpBound);
+  }
+
+  zoomOut(): void {
+    if (this.isAnimating()) return;
+
+    this.isAnimating.set(true);
+    this.scrollProgress.set(1);
+
+    if (this.animTimerId) clearTimeout(this.animTimerId);
+    this.animTimerId = setTimeout(() => this.clearAnimating(), 700);
   }
 
   onFaceClick(faceIndex: number): void {
@@ -180,13 +177,18 @@ export class Cube implements AfterViewInit, OnDestroy {
 
     this.pauseAutoRotate();
 
-    // Snap to the nearest face so we zoom into a full page, not a split
-    const totalRotation = this.activeFace() * -90 + this.scrollRotation() + this.idleRotation;
-    const nearestFace = Math.round(-totalRotation / 90);
+    // Snap X rotation to the nearest face
+    const totalRotationX = this.activeFace() * -90 + this.scrollRotation() + this.idleRotation;
+    const nearestFace = Math.round(-totalRotationX / 90);
     this.activeFace.set(nearestFace);
     this.scrollRotation.set(0);
     this.idleRotation = 0;
     this.idleRotationSignal.set(0);
+
+    // Snap Y rotation to the nearest 90°
+    const totalRotationY = this.scrollRotationY();
+    const snappedY = Math.round(totalRotationY / 90) * 90;
+    this.scrollRotationY.set(snappedY);
 
     // Animate snap + zoom together
     this.isAnimating.set(true);
