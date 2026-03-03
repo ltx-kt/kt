@@ -1,7 +1,6 @@
 import { Component, computed, signal, HostListener, ElementRef, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 
 const SCROLL_SENSITIVITY = 800;
-const MAX_SCROLL = 5.0;
 const AUTO_ROTATE_SPEED = 0.08; // degrees per frame (~5°/sec at 60fps)
 const IDLE_RESUME_DELAY = 2000; // ms before auto-rotation resumes after interaction
 
@@ -96,7 +95,7 @@ export class App implements AfterViewInit, OnDestroy {
     const delta = event.deltaY / SCROLL_SENSITIVITY;
     const current = this.scrollProgress();
     const minScroll = current >= 1 ? 1 : 0;
-    const newProgress = Math.max(minScroll, Math.min(MAX_SCROLL, current + delta));
+    const newProgress = Math.max(minScroll, current + delta);
     this.scrollProgress.set(newProgress);
   }
 
