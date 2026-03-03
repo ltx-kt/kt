@@ -29,11 +29,11 @@ export class App implements AfterViewInit, OnDestroy {
   cubeRotation = computed(() => {
     const p = this.scrollProgress();
     const base = this.activeFace() * -90;
-    return p < 1 ? base : base - (p - 1) * 90;
+    return p < 1 ? base : base + (p - 1) * 90;
   });
 
   cubeTransform = computed(() => {
-    const rotation = this.cubeRotation() - this.idleRotationSignal();
+    const rotation = this.cubeRotation() + this.idleRotationSignal();
     return `scale(${this.cubeScale()}) rotateX(${rotation}deg)`;
   });
 
