@@ -99,13 +99,8 @@ export class App implements AfterViewInit, OnDestroy {
       // Zooming phase: clamp between 0 and 1
       this.scrollProgress.set(Math.max(0, Math.min(1, current + delta)));
     } else {
-      if (delta < 0 && this.scrollRotation() === 0) {
-        // At cube view with no scroll rotation: allow zooming back in
-        this.scrollProgress.set(Math.max(0, current + delta));
-      } else {
-        // Cube view: unbounded rotation
-        this.scrollRotation.update(r => r + delta * 90);
-      }
+      // Cube view: unbounded rotation in both directions
+      this.scrollRotation.update(r => r + delta * 90);
     }
   }
 
