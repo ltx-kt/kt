@@ -109,16 +109,14 @@ export class App implements AfterViewInit, OnDestroy {
 
     this.pauseAutoRotate();
 
-    // Snap rotation instantly (no transition class yet)
-    this.activeFace.set(faceIndex);
+    // Bake current total rotation into activeFace so there's no rotation change
+    const totalRotation = this.activeFace() * -90 + this.scrollRotation() + this.idleRotation;
+    this.activeFace.set(-totalRotation / 90);
+    this.scrollRotation.set(0);
     this.idleRotation = 0;
     this.idleRotationSignal.set(0);
-    this.scrollRotation.set(0);
 
-    // Force reflow so rotation applies without animation
-    void this.cubeEl.nativeElement.offsetHeight;
-
-    // Now animate only the zoom
+    // Animate only the zoom
     this.isAnimating.set(true);
     this.scrollProgress.set(0);
 
