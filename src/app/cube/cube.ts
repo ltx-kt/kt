@@ -51,9 +51,15 @@ export class Cube implements AfterViewInit, OnDestroy {
     return this.scrollProgress() < 1 ? base : base + this.scrollRotation();
   });
 
+  cubeScaleX = computed(() => {
+    const p = this.scrollProgress();
+    const ratio = window.innerHeight / window.innerWidth;
+    return 1 + (ratio - 1) * p;
+  });
+
   cubeTransform = computed(() => {
     const rotation = this.cubeRotation() + this.idleRotationSignal();
-    return `scale(${this.cubeScale()}) rotateX(${rotation}deg)`;
+    return `scale(${this.cubeScale()}) scaleX(${this.cubeScaleX()}) rotateX(${rotation}deg)`;
   });
 
   idleRotationSignal = signal(0);
