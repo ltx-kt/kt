@@ -130,6 +130,25 @@ describe('Cube', () => {
     });
   });
 
+  describe('cubeTransform', () => {
+    it('should include both rotateX and rotateY', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      cube.scrollProgress.set(1);
+      cube.scrollRotation.set(10);
+      cube.scrollRotationY.set(20);
+      const transform = cube.cubeTransform();
+      expect(transform).toContain('rotateX(');
+      expect(transform).toContain('rotateY(20deg)');
+    });
+
+    it('should not include scaleX', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      expect(cube.cubeTransform()).not.toContain('scaleX');
+    });
+  });
+
   describe('isExpanded', () => {
     it('should be true when scrollProgress is 0', () => {
       const fixture = TestBed.createComponent(Cube);
@@ -320,6 +339,85 @@ describe('Cube', () => {
 
       const button = fixture.nativeElement.querySelector('.back-button');
       expect(button).toBeFalsy();
+    });
+  });
+
+  // ── Expanded class binding ──────────────────────────────────────────────────
+
+  describe('cube--expanded class', () => {
+    it('should add cube--expanded class when expanded', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      cube.scrollProgress.set(0);
+      fixture.detectChanges();
+
+      const cubeDiv = fixture.nativeElement.querySelector('.cube');
+      expect(cubeDiv.classList.contains('cube--expanded')).toBe(true);
+    });
+
+    it('should not have cube--expanded class in cube view', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      cube.scrollProgress.set(1);
+      fixture.detectChanges();
+
+      const cubeDiv = fixture.nativeElement.querySelector('.cube');
+      expect(cubeDiv.classList.contains('cube--expanded')).toBe(false);
+    });
+  });
+
+  // ── Placeholder faces ─────────────────────────────────────────────────────
+
+  describe('placeholder faces', () => {
+    it('should not have click handlers on left and right faces', () => {
+      const fixture = TestBed.createComponent(Cube);
+      fixture.detectChanges();
+      const left = fixture.nativeElement.querySelector('.cube__face--left');
+      const right = fixture.nativeElement.querySelector('.cube__face--right');
+      expect(left).toBeTruthy();
+      expect(right).toBeTruthy();
+      // Clicking placeholder faces should not change scrollProgress
+      const cube = fixture.componentInstance;
+      cube.scrollProgress.set(1);
+      left.click();
+      right.click();
+      expect(cube.scrollProgress()).toBe(1);
+    });
+  });
+
+  // ── Drag interaction ──────────────────────────────────────────────────────
+
+  describe('onPointerDown', () => {
+    it('should not start drag while animating', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      fixture.detectChanges();
+      cube.isAnimating.set(true);
+      cube.scrollProgress.set(1);
+      cube.scrollRotation.set(0);
+
+      cube.onPointerDown(new PointerEvent('pointerdown', { clientX: 100, clientY: 100 }));
+      // Simulate a move — rotation should not change since drag was blocked
+      document.dispatchEvent(new PointerEvent('pointermove', { clientX: 100, clientY: 200 }));
+      expect(cube.scrollRotation()).toBe(0);
+    });
+  });
+
+  describe('onFaceClick drag suppression', () => {
+    it('should not zoom in if drag occurred', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      fixture.detectChanges();
+      cube.scrollProgress.set(1);
+
+      // Simulate a drag: pointerdown → pointermove (beyond threshold) → pointerup
+      cube.onPointerDown(new PointerEvent('pointerdown', { clientX: 100, clientY: 100 }));
+      document.dispatchEvent(new PointerEvent('pointermove', { clientX: 100, clientY: 200 }));
+      document.dispatchEvent(new PointerEvent('pointerup', { clientX: 100, clientY: 200 }));
+
+      // Click after drag should be suppressed
+      cube.onFaceClick(0);
+      expect(cube.scrollProgress()).toBe(1);
     });
   });
 
