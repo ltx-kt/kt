@@ -2,7 +2,7 @@ import { Component, computed, signal, HostListener, ElementRef, ViewChild, After
 
 const SCROLL_SENSITIVITY = 800;
 const MAX_SCROLL = 5.0;
-const AUTO_ROTATE_SPEED = 0.3; // degrees per frame (~18°/sec at 60fps)
+const AUTO_ROTATE_SPEED = 0.08; // degrees per frame (~5°/sec at 60fps)
 const IDLE_RESUME_DELAY = 2000; // ms before auto-rotation resumes after interaction
 
 @Component({
