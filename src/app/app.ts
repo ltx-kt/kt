@@ -109,14 +109,15 @@ export class App implements AfterViewInit, OnDestroy {
 
     this.pauseAutoRotate();
 
-    // Bake current total rotation into activeFace so there's no rotation change
+    // Snap to the nearest face so we zoom into a full page, not a split
     const totalRotation = this.activeFace() * -90 + this.scrollRotation() + this.idleRotation;
-    this.activeFace.set(-totalRotation / 90);
+    const nearestFace = Math.round(-totalRotation / 90);
+    this.activeFace.set(nearestFace);
     this.scrollRotation.set(0);
     this.idleRotation = 0;
     this.idleRotationSignal.set(0);
 
-    // Animate only the zoom
+    // Animate snap + zoom together
     this.isAnimating.set(true);
     this.scrollProgress.set(0);
 
