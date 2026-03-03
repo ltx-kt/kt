@@ -20,6 +20,7 @@ export class App implements AfterViewInit, OnDestroy {
   private autoRotate = true;
   private animFrameId = 0;
   private idleTimerId: ReturnType<typeof setTimeout> | null = null;
+  private animTimerId: ReturnType<typeof setTimeout> | null = null;
 
   cubeScale = computed(() => {
     const p = this.scrollProgress();
@@ -44,8 +45,10 @@ export class App implements AfterViewInit, OnDestroy {
   @ViewChild('cubeEl') cubeEl!: ElementRef<HTMLElement>;
 
   ngAfterViewInit(): void {
-    this.cubeEl.nativeElement.addEventListener('transitionend', () => {
-      this.isAnimating.set(false);
+    this.cubeEl.nativeElement.addEventListener('transitionend', (e: TransitionEvent) => {
+      if (e.target === this.cubeEl.nativeElement && e.propertyName === 'transform') {
+        this.clearAnimating();
+      }
     });
     this.startAutoRotate();
   }
@@ -53,6 +56,15 @@ export class App implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     cancelAnimationFrame(this.animFrameId);
     if (this.idleTimerId) clearTimeout(this.idleTimerId);
+    if (this.animTimerId) clearTimeout(this.animTimerId);
+  }
+
+  private clearAnimating(): void {
+    this.isAnimating.set(false);
+    if (this.animTimerId) {
+      clearTimeout(this.animTimerId);
+      this.animTimerId = null;
+    }
   }
 
   private startAutoRotate(): void {
@@ -97,5 +109,9 @@ export class App implements AfterViewInit, OnDestroy {
     this.idleRotation = 0;
     this.idleRotationSignal.set(0);
     this.scrollProgress.set(0);
+
+    // Fallback in case transitionend doesn't fire
+    if (this.animTimerId) clearTimeout(this.animTimerId);
+    this.animTimerId = setTimeout(() => this.clearAnimating(), 700);
   }
 }
