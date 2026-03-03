@@ -12,6 +12,7 @@ const IDLE_RESUME_DELAY = 2000; // ms before auto-rotation resumes after interac
 })
 export class App implements AfterViewInit, OnDestroy {
   scrollProgress = signal(1);
+  scrollRotation = signal(0);
   activeFace = signal(0);
   isAnimating = signal(false);
 
@@ -27,9 +28,8 @@ export class App implements AfterViewInit, OnDestroy {
   });
 
   cubeRotation = computed(() => {
-    const p = this.scrollProgress();
     const base = this.activeFace() * -90;
-    return p < 1 ? base : base + (p - 1) * 90;
+    return this.scrollProgress() < 1 ? base : base + this.scrollRotation();
   });
 
   cubeTransform = computed(() => {
@@ -94,9 +94,19 @@ export class App implements AfterViewInit, OnDestroy {
 
     const delta = event.deltaY / SCROLL_SENSITIVITY;
     const current = this.scrollProgress();
-    const minScroll = current >= 1 ? 1 : 0;
-    const newProgress = Math.max(minScroll, current + delta);
-    this.scrollProgress.set(newProgress);
+
+    if (current < 1) {
+      // Zooming phase: clamp between 0 and 1
+      this.scrollProgress.set(Math.max(0, Math.min(1, current + delta)));
+    } else {
+      if (delta < 0 && this.scrollRotation() === 0) {
+        // At cube view with no scroll rotation: allow zooming back in
+        this.scrollProgress.set(Math.max(0, current + delta));
+      } else {
+        // Cube view: unbounded rotation
+        this.scrollRotation.update(r => r + delta * 90);
+      }
+    }
   }
 
   onFaceClick(faceIndex: number): void {
@@ -107,6 +117,7 @@ export class App implements AfterViewInit, OnDestroy {
     this.activeFace.set(faceIndex);
     this.idleRotation = 0;
     this.idleRotationSignal.set(0);
+    this.scrollRotation.set(0);
     this.scrollProgress.set(0);
 
     // Fallback in case transitionend doesn't fire
