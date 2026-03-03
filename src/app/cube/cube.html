@@ -1,0 +1,25 @@
+<div class="scene" [class.scene--transitioning]="isAnimating()">
+  <div class="cube" #cubeEl [style.transform]="cubeTransform()">
+
+    <!-- Front: Home -->
+    <div class="cube__face cube__face--front" (click)="onFaceClick(0)">
+      <app-home />
+    </div>
+
+    <!-- Bottom: About -->
+    <div class="cube__face cube__face--bottom" (click)="onFaceClick(1)">
+      <app-about />
+    </div>
+
+    <!-- Back: Projects -->
+    <div class="cube__face cube__face--back" (click)="onFaceClick(2)">
+      <app-projects />
+    </div>
+
+    <!-- Top: Contact -->
+    <div class="cube__face cube__face--top" (click)="onFaceClick(3)">
+      <app-contact />
+    </div>
+
+  </div>
+</div>
