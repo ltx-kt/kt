@@ -5,6 +5,8 @@ import { Projects } from '../faces/projects/projects';
 import { Contact } from '../faces/contact/contact';
 
 const SCROLL_SENSITIVITY = 800;
+const DRAG_SENSITIVITY = 300; // pixels per 90° of rotation
+const DRAG_MOVE_THRESHOLD = 5; // pixels before a drag suppresses click
 const AUTO_ROTATE_SPEED = 0.08; // degrees per frame (~5°/sec at 60fps)
 const IDLE_RESUME_DELAY = 2000; // ms before auto-rotation resumes after interaction
 
@@ -25,6 +27,15 @@ export class Cube implements AfterViewInit, OnDestroy {
   private animFrameId = 0;
   private idleTimerId: ReturnType<typeof setTimeout> | null = null;
   private animTimerId: ReturnType<typeof setTimeout> | null = null;
+
+  private isDragging = false;
+  private dragStartY = 0;
+  private dragStartRotation = 0;
+  private dragStartProgress = 0;
+  private dragMoved = false;
+
+  private onPointerMoveBound = this.onPointerMove.bind(this);
+  private onPointerUpBound = this.onPointerUp.bind(this);
 
   cubeScale = computed(() => {
     const p = this.scrollProgress();
@@ -64,6 +75,8 @@ export class Cube implements AfterViewInit, OnDestroy {
     cancelAnimationFrame(this.animFrameId);
     if (this.idleTimerId) clearTimeout(this.idleTimerId);
     if (this.animTimerId) clearTimeout(this.animTimerId);
+    document.removeEventListener('pointermove', this.onPointerMoveBound);
+    document.removeEventListener('pointerup', this.onPointerUpBound);
   }
 
   private clearAnimating(): void {
@@ -112,7 +125,51 @@ export class Cube implements AfterViewInit, OnDestroy {
     }
   }
 
+  @HostListener('pointerdown', ['$event'])
+  onPointerDown(event: PointerEvent): void {
+    if (this.isAnimating()) return;
+
+    this.isDragging = true;
+    this.dragMoved = false;
+    this.dragStartY = event.clientY;
+    this.dragStartRotation = this.scrollRotation();
+    this.dragStartProgress = this.scrollProgress();
+
+    this.pauseAutoRotate();
+    (event.target as Element)?.setPointerCapture?.(event.pointerId);
+    document.addEventListener('pointermove', this.onPointerMoveBound);
+    document.addEventListener('pointerup', this.onPointerUpBound);
+  }
+
+  private onPointerMove(event: PointerEvent): void {
+    if (!this.isDragging) return;
+
+    const deltaY = event.clientY - this.dragStartY;
+
+    if (Math.abs(deltaY) > DRAG_MOVE_THRESHOLD) {
+      this.dragMoved = true;
+    }
+
+    if (this.dragStartProgress < 1) {
+      const progressDelta = deltaY / DRAG_SENSITIVITY;
+      this.scrollProgress.set(Math.max(0, Math.min(1, this.dragStartProgress + progressDelta)));
+    } else {
+      this.scrollRotation.set(this.dragStartRotation + (deltaY / DRAG_SENSITIVITY) * 90);
+    }
+  }
+
+  private onPointerUp(event: PointerEvent): void {
+    this.isDragging = false;
+    (event.target as Element)?.releasePointerCapture?.(event.pointerId);
+    document.removeEventListener('pointermove', this.onPointerMoveBound);
+    document.removeEventListener('pointerup', this.onPointerUpBound);
+  }
+
   onFaceClick(faceIndex: number): void {
+    if (this.dragMoved) {
+      this.dragMoved = false;
+      return;
+    }
     if (this.scrollProgress() < 0.5 || this.isAnimating()) return;
 
     this.pauseAutoRotate();

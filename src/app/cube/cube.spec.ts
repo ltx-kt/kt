@@ -59,11 +59,14 @@ describe('Cube', () => {
   // ── Computed signals ────────────────────────────────────────────────────────
 
   describe('cubeScale', () => {
-    it('should return 1 when scrollProgress is 0 (fully expanded)', () => {
+    // The fitScale formula compensates for perspective magnification from translateZ(50vh)
+    const fitScale = (1500 - window.innerHeight * 0.5) / 1500;
+
+    it('should return fitScale when scrollProgress is 0 (fully expanded)', () => {
       const fixture = TestBed.createComponent(Cube);
       const cube = fixture.componentInstance;
       cube.scrollProgress.set(0);
-      expect(cube.cubeScale()).toBe(1);
+      expect(cube.cubeScale()).toBeCloseTo(fitScale, 3);
     });
 
     it('should return 0.35 when scrollProgress is 1 (cube view)', () => {
@@ -73,11 +76,12 @@ describe('Cube', () => {
       expect(cube.cubeScale()).toBe(0.35);
     });
 
-    it('should interpolate between 1 and 0.35 during zoom', () => {
+    it('should interpolate between fitScale and 0.35 during zoom', () => {
       const fixture = TestBed.createComponent(Cube);
       const cube = fixture.componentInstance;
       cube.scrollProgress.set(0.5);
-      expect(cube.cubeScale()).toBeCloseTo(0.675, 3);
+      const expected = fitScale + (0.35 - fitScale) * 0.5;
+      expect(cube.cubeScale()).toBeCloseTo(expected, 3);
     });
   });
 
