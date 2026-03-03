@@ -147,7 +147,7 @@ export class Cube implements AfterViewInit, OnDestroy {
       this.scrollProgress.set(Math.max(0, Math.min(1, this.dragStartProgress + progressDelta)));
     } else {
       this.scrollRotation.set(this.dragStartRotation + (deltaY / DRAG_SENSITIVITY) * 90);
-      this.scrollRotationY.set(this.dragStartRotationY + (-deltaX / DRAG_SENSITIVITY) * 90);
+      this.scrollRotationY.set(this.dragStartRotationY + (deltaX / DRAG_SENSITIVITY) * 90);
     }
   }
 
