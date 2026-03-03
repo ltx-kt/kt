@@ -1,5 +1,5 @@
 <div class="scene" [class.scene--transitioning]="isAnimating()">
-  <div class="cube" #cubeEl [style.transform]="cubeTransform()">
+  <div class="cube" [class.cube--expanded]="isExpanded()" #cubeEl [style.transform]="cubeTransform()">
 
     <!-- Front: Home -->
     <div class="cube__face cube__face--front" (click)="onFaceClick(0)">
