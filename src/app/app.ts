@@ -45,7 +45,9 @@ export class App implements AfterViewInit {
     if (this.isAnimating()) return;
 
     const delta = event.deltaY / SCROLL_SENSITIVITY;
-    const newProgress = Math.max(0, Math.min(MAX_SCROLL, this.scrollProgress() + delta));
+    const current = this.scrollProgress();
+    const minScroll = current >= 1 ? 1 : 0;
+    const newProgress = Math.max(minScroll, Math.min(MAX_SCROLL, current + delta));
     this.scrollProgress.set(newProgress);
   }
 
