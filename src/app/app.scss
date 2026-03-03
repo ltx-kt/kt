@@ -42,6 +42,8 @@
   justify-content: center;
   backface-visibility: hidden;
   will-change: transform;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   cursor: pointer;
 }
 
@@ -73,7 +75,8 @@
   text-align: center;
   padding: 2rem;
   max-width: 800px;
-
+  transform: translateZ(0);
+  text-rendering: optimizeLegibility;
 }
 
 // Home face
