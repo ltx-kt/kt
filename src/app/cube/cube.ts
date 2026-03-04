@@ -151,6 +151,7 @@ export class Cube implements AfterViewInit, OnDestroy {
   @HostListener('pointerdown', ['$event'])
   onPointerDown(event: PointerEvent): void {
     if (this.isAnimating()) return;
+    if (this.isExpanded()) return;
 
     this.momentumVelocityX = 0;
     this.momentumVelocityY = 0;
