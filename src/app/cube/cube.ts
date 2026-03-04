@@ -32,6 +32,9 @@ export class Cube implements AfterViewInit, OnDestroy {
   private idleTimerId: ReturnType<typeof setTimeout> | null = null;
   private animTimerId: ReturnType<typeof setTimeout> | null = null;
 
+  private isRotating = false;
+  private rotationAnimation: Animation | null = null;
+
   private isDragging = false;
   private dragStartX = 0;
   private dragStartY = 0;
@@ -98,6 +101,10 @@ export class Cube implements AfterViewInit, OnDestroy {
     cancelAnimationFrame(this.animFrameId);
     if (this.idleTimerId) clearTimeout(this.idleTimerId);
     if (this.animTimerId) clearTimeout(this.animTimerId);
+    if (this.rotationAnimation) {
+      this.rotationAnimation.cancel();
+      this.rotationAnimation = null;
+    }
     document.removeEventListener('pointermove', this.onPointerMoveBound);
     document.removeEventListener('pointerup', this.onPointerUpBound);
   }
@@ -150,7 +157,7 @@ export class Cube implements AfterViewInit, OnDestroy {
 
   @HostListener('pointerdown', ['$event'])
   onPointerDown(event: PointerEvent): void {
-    if (this.isAnimating()) return;
+    if (this.isAnimating() || this.isRotating) return;
     if (this.isExpanded()) return;
 
     this.momentumVelocityX = 0;
@@ -254,29 +261,63 @@ export class Cube implements AfterViewInit, OnDestroy {
       this.dragMoved = false;
       return;
     }
-    if (this.scrollProgress() < 0.5 || this.isAnimating()) return;
+    if (this.scrollProgress() < 0.5 || this.isAnimating() || this.isRotating) return;
 
     this.momentumVelocityX = 0;
     this.momentumVelocityY = 0;
     this.momentumLastTime = 0;
 
     this.pauseAutoRotate();
+    this.isRotating = true;
 
-    // Snap to the clicked face right-side up instantly (no transition)
-    this.activeFace.set(faceIndex);
-    this.scrollRotation.set(0);
-    this.idleRotation = 0;
-    this.idleRotationSignal.set(0);
-    this.scrollRotationY.set(0);
+    // Phase 1 — capture current state and compute shortest rotation path
+    const currentX = this.cubeRotation() + this.idleRotationSignal();
+    const currentY = this.cubeRotationY();
+    const currentScale = this.cubeScale();
+    const targetX = faceIndex * -90;
+    const deltaX = ((targetX - currentX) % 360 + 540) % 360 - 180;
+    const endX = currentX + deltaX;
 
-    // Wait one frame for the snap to render, then animate only the zoom
-    requestAnimationFrame(() => {
+    // Start WAAPI rotation animation if the API is available
+    if (this.rotationAnimation) {
+      this.rotationAnimation.cancel();
+      this.rotationAnimation = null;
+    }
+    const el = this.cubeEl.nativeElement;
+    if (typeof el.animate === 'function') {
+      this.rotationAnimation = el.animate(
+        [
+          { transform: `scale(${currentScale}) rotateX(${currentX}deg) rotateY(${currentY}deg)` },
+          { transform: `scale(${currentScale}) rotateX(${endX}deg) rotateY(0deg)` },
+        ],
+        { duration: 400, easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)', fill: 'forwards' },
+      );
+    }
+
+    // After rotation completes, snap signals and start zoom (Phase 2)
+    if (this.animTimerId) clearTimeout(this.animTimerId);
+    this.animTimerId = setTimeout(() => {
+      this.isRotating = false;
+
+      // Snap signals to match the rotation end state
+      this.activeFace.set(faceIndex);
+      this.scrollRotation.set(0);
+      this.idleRotation = 0;
+      this.idleRotationSignal.set(0);
+      this.scrollRotationY.set(0);
+
+      // Cancel WAAPI fill — signals now produce the equivalent transform
+      if (this.rotationAnimation) {
+        this.rotationAnimation.cancel();
+        this.rotationAnimation = null;
+      }
+
+      // Phase 2 — zoom in via CSS transition
       this.isAnimating.set(true);
       this.scrollProgress.set(0);
 
-      // Fallback in case transitionend doesn't fire
       if (this.animTimerId) clearTimeout(this.animTimerId);
       this.animTimerId = setTimeout(() => this.clearAnimating(), 700);
-    });
+    }, 400);
   }
 }
