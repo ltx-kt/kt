@@ -1,1 +1,9 @@
 @use '../../shared-face' as *;
+
+.face-heading {
+  font-size: clamp(4rem, 10vw, 8rem);
+}
+
+.face-body {
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+}
