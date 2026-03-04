@@ -4,4 +4,23 @@
     Software engineer passionate about building fast,
     accessible web experiences and clean systems design.
   </p>
+
+  <section class="experience">
+    @for (job of experience; track job.company) {
+      <article class="experience__item">
+        <div class="experience__header">
+          <div class="experience__title">
+            <span class="experience__role">{{ job.role }}</span>
+            <span class="experience__company">{{ job.company }}</span>
+          </div>
+          <span class="experience__date">{{ job.date }}</span>
+        </div>
+        <ul class="experience__list">
+          @for (item of job.responsibilities; track item) {
+            <li class="experience__responsibility">{{ item }}</li>
+          }
+        </ul>
+      </article>
+    }
+  </section>
 </div>

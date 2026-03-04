@@ -45,3 +45,6 @@ Thumbs.db
 
 # Claude Code
 .claude/
+
+# Personal data (use experience.sample.ts as template)
+src/app/faces/about/experience.ts
