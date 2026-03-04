@@ -44,7 +44,7 @@ export class Particles implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     cancelAnimationFrame(this.rafId);
-    this.observer.disconnect();
+    this.observer?.disconnect();
   }
 
   private resize(): void {
