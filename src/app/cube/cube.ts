@@ -39,6 +39,8 @@ export class Cube implements AfterViewInit, OnDestroy {
   private dragStartRotationY = 0;
   private dragStartProgress = 0;
   private dragMoved = false;
+  private dragFlipX = 1;  // sign correction for vertical drag → X rotation
+  private dragFlipY = 1;  // sign correction for horizontal drag → Y rotation
 
   private pointerHistory: { x: number; y: number; time: number }[] = [];
   private momentumVelocityX = 0; // deg/s
@@ -158,6 +160,11 @@ export class Cube implements AfterViewInit, OnDestroy {
     this.dragStartRotationY = this.scrollRotationY();
     this.dragStartProgress = this.scrollProgress();
 
+    const totalX = this.activeFace() * -90 + this.dragStartRotation + this.idleRotation;
+    const totalY = this.dragStartRotationY;
+    this.dragFlipX = Math.cos(totalY * Math.PI / 180) >= 0 ? 1 : -1;
+    this.dragFlipY = Math.cos(totalX * Math.PI / 180) >= 0 ? 1 : -1;
+
     this.pauseAutoRotate();
     (event.target as Element)?.setPointerCapture?.(event.pointerId);
     document.addEventListener('pointermove', this.onPointerMoveBound);
@@ -178,8 +185,8 @@ export class Cube implements AfterViewInit, OnDestroy {
       const progressDelta = deltaY / DRAG_SENSITIVITY;
       this.scrollProgress.set(Math.max(0, Math.min(1, this.dragStartProgress + progressDelta)));
     } else {
-      this.scrollRotation.set(this.dragStartRotation + (-deltaY / DRAG_SENSITIVITY) * 90);
-      this.scrollRotationY.set(this.dragStartRotationY + (deltaX / DRAG_SENSITIVITY) * 90);
+      this.scrollRotation.set(this.dragStartRotation + (-deltaY / DRAG_SENSITIVITY) * 90 * this.dragFlipX);
+      this.scrollRotationY.set(this.dragStartRotationY + (deltaX / DRAG_SENSITIVITY) * 90 * this.dragFlipY);
 
       const now = performance.now();
       this.pointerHistory.push({ x: event.clientX, y: event.clientY, time: now });
@@ -214,8 +221,8 @@ export class Cube implements AfterViewInit, OnDestroy {
     const dyPx = newest.y - oldest.y;
 
     // Convert pixel velocity to deg/s using the same scaling as onPointerMove
-    this.momentumVelocityX = (-dyPx / DRAG_SENSITIVITY) * 90 / dt;
-    this.momentumVelocityY = (dxPx / DRAG_SENSITIVITY) * 90 / dt;
+    this.momentumVelocityX = (-dyPx / DRAG_SENSITIVITY) * 90 / dt * this.dragFlipX;
+    this.momentumVelocityY = (dxPx / DRAG_SENSITIVITY) * 90 / dt * this.dragFlipY;
 
     const speed = Math.sqrt(this.momentumVelocityX ** 2 + this.momentumVelocityY ** 2);
     if (speed > MOMENTUM_STOP_THRESHOLD) {
