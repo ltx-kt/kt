@@ -9,6 +9,9 @@ const DRAG_SENSITIVITY = 300; // pixels per 90° of rotation
 const DRAG_MOVE_THRESHOLD = 5; // pixels before a drag suppresses click
 const AUTO_ROTATE_SPEED = 0.08; // degrees per frame (~5°/sec at 60fps)
 const IDLE_RESUME_DELAY = 2000; // ms before auto-rotation resumes after interaction
+const MOMENTUM_FRICTION = 0.96; // per-frame decay (normalized to 60fps)
+const MOMENTUM_STOP_THRESHOLD = 0.5; // deg/s below which momentum stops
+const VELOCITY_SAMPLE_WINDOW = 100; // ms window for velocity calculation
 
 @Component({
   selector: 'app-cube',
@@ -36,6 +39,11 @@ export class Cube implements AfterViewInit, OnDestroy {
   private dragStartRotationY = 0;
   private dragStartProgress = 0;
   private dragMoved = false;
+
+  private pointerHistory: { x: number; y: number; time: number }[] = [];
+  private momentumVelocityX = 0; // deg/s
+  private momentumVelocityY = 0; // deg/s
+  private momentumLastTime = 0;
 
   private onPointerMoveBound = this.onPointerMove.bind(this);
   private onPointerUpBound = this.onPointerUp.bind(this);
@@ -96,8 +104,27 @@ export class Cube implements AfterViewInit, OnDestroy {
   }
 
   private startAutoRotate(): void {
-    const tick = () => {
-      if (this.autoRotate && this.scrollProgress() >= 1 && !this.isAnimating()) {
+    const tick = (timestamp: number) => {
+      // Momentum phase
+      if (this.momentumLastTime > 0 && (this.momentumVelocityX !== 0 || this.momentumVelocityY !== 0)) {
+        const dt = (timestamp - this.momentumLastTime) / 1000; // seconds
+        this.momentumLastTime = timestamp;
+
+        this.scrollRotation.update(r => r + this.momentumVelocityX * dt);
+        this.scrollRotationY.update(r => r + this.momentumVelocityY * dt);
+
+        const decay = Math.pow(MOMENTUM_FRICTION, dt * 60);
+        this.momentumVelocityX *= decay;
+        this.momentumVelocityY *= decay;
+
+        const speed = Math.sqrt(this.momentumVelocityX ** 2 + this.momentumVelocityY ** 2);
+        if (speed < MOMENTUM_STOP_THRESHOLD) {
+          this.momentumVelocityX = 0;
+          this.momentumVelocityY = 0;
+          this.momentumLastTime = 0;
+          this.pauseAutoRotate();
+        }
+      } else if (this.autoRotate && this.scrollProgress() >= 1 && !this.isAnimating()) {
         this.idleRotation += AUTO_ROTATE_SPEED;
         this.idleRotationSignal.set(this.idleRotation);
       }
@@ -117,6 +144,11 @@ export class Cube implements AfterViewInit, OnDestroy {
   @HostListener('pointerdown', ['$event'])
   onPointerDown(event: PointerEvent): void {
     if (this.isAnimating()) return;
+
+    this.momentumVelocityX = 0;
+    this.momentumVelocityY = 0;
+    this.momentumLastTime = 0;
+    this.pointerHistory = [];
 
     this.isDragging = true;
     this.dragMoved = false;
@@ -148,14 +180,50 @@ export class Cube implements AfterViewInit, OnDestroy {
     } else {
       this.scrollRotation.set(this.dragStartRotation + (-deltaY / DRAG_SENSITIVITY) * 90);
       this.scrollRotationY.set(this.dragStartRotationY + (deltaX / DRAG_SENSITIVITY) * 90);
+
+      const now = performance.now();
+      this.pointerHistory.push({ x: event.clientX, y: event.clientY, time: now });
+      const cutoff = now - VELOCITY_SAMPLE_WINDOW;
+      while (this.pointerHistory.length > 0 && this.pointerHistory[0].time < cutoff) {
+        this.pointerHistory.shift();
+      }
     }
   }
 
   private onPointerUp(event: PointerEvent): void {
+    const wasDraggingCube = this.dragStartProgress >= 1;
     this.isDragging = false;
     (event.target as Element)?.releasePointerCapture?.(event.pointerId);
     document.removeEventListener('pointermove', this.onPointerMoveBound);
     document.removeEventListener('pointerup', this.onPointerUpBound);
+
+    if (wasDraggingCube) {
+      this.applyMomentum();
+    }
+  }
+
+  private applyMomentum(): void {
+    if (this.pointerHistory.length < 2) return;
+
+    const oldest = this.pointerHistory[0];
+    const newest = this.pointerHistory[this.pointerHistory.length - 1];
+    const dt = (newest.time - oldest.time) / 1000; // seconds
+    if (dt <= 0) return;
+
+    const dxPx = newest.x - oldest.x;
+    const dyPx = newest.y - oldest.y;
+
+    // Convert pixel velocity to deg/s using the same scaling as onPointerMove
+    this.momentumVelocityX = (-dyPx / DRAG_SENSITIVITY) * 90 / dt;
+    this.momentumVelocityY = (dxPx / DRAG_SENSITIVITY) * 90 / dt;
+
+    const speed = Math.sqrt(this.momentumVelocityX ** 2 + this.momentumVelocityY ** 2);
+    if (speed > MOMENTUM_STOP_THRESHOLD) {
+      this.momentumLastTime = performance.now();
+    } else {
+      this.momentumVelocityX = 0;
+      this.momentumVelocityY = 0;
+    }
   }
 
   zoomOut(): void {
@@ -174,6 +242,10 @@ export class Cube implements AfterViewInit, OnDestroy {
       return;
     }
     if (this.scrollProgress() < 0.5 || this.isAnimating()) return;
+
+    this.momentumVelocityX = 0;
+    this.momentumVelocityY = 0;
+    this.momentumLastTime = 0;
 
     this.pauseAutoRotate();
 
