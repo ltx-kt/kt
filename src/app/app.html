@@ -1,2 +1,2 @@
-<div class="banner">KevinTran.kt</div>
-<app-cube />
+<app-banner [cubeExpanded]="cubeExpanded()" />
+<app-cube (expandedChange)="cubeExpanded.set($event)" />
