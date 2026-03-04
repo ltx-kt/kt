@@ -1,1 +1,67 @@
 @use '../../shared-face' as *;
+
+.experience {
+  margin-top: 1.5rem;
+  text-align: left;
+  width: 100%;
+
+  &__item {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1.25rem 0;
+
+    &:last-child {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  &__title {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  &__role {
+    font-size: clamp(0.85rem, 1.8vw, 1rem);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  &__company {
+    font-size: clamp(0.75rem, 1.6vw, 0.875rem);
+    font-weight: 400;
+    color: #a78bfa;
+  }
+
+  &__date {
+    font-size: clamp(0.7rem, 1.4vw, 0.8rem);
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.4);
+    white-space: nowrap;
+  }
+
+  &__list {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+
+  &__responsibility {
+    font-size: clamp(0.75rem, 1.6vw, 0.875rem);
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.6;
+    margin-bottom: 0.3rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
