@@ -640,6 +640,105 @@ describe('Cube', () => {
     });
   });
 
+  // ── Drag direction flip ────────────────────────────────────────────────────
+
+  describe('drag direction flip', () => {
+    function simulateDragForFlip(cube: any, options: {
+      startX?: number; startY?: number;
+      endX?: number; endY?: number;
+    } = {}) {
+      const { startX = 100, startY = 100, endX = 100, endY = 300 } = options;
+      const startTime = 1000;
+
+      cube.scrollProgress.set(1);
+      cube.onPointerDown(new PointerEvent('pointerdown', { clientX: startX, clientY: startY }));
+
+      vi.spyOn(performance, 'now').mockReturnValue(startTime);
+      document.dispatchEvent(new PointerEvent('pointermove', { clientX: startX, clientY: startY }));
+
+      vi.spyOn(performance, 'now').mockReturnValue(startTime + 50);
+      document.dispatchEvent(new PointerEvent('pointermove', { clientX: endX, clientY: endY }));
+
+      vi.spyOn(performance, 'now').mockReturnValue(startTime + 50);
+      document.dispatchEvent(new PointerEvent('pointerup', { clientX: endX, clientY: endY }));
+    }
+
+    it('should have normal horizontal drag direction when X rotation is near 0', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      fixture.detectChanges();
+
+      cube.scrollProgress.set(1);
+      cube.scrollRotation.set(0);
+      cube.scrollRotationY.set(0);
+      cube.activeFace.set(0);
+
+      cube.onPointerDown(new PointerEvent('pointerdown', { clientX: 100, clientY: 100 }));
+      document.dispatchEvent(new PointerEvent('pointermove', { clientX: 200, clientY: 100 }));
+
+      // Dragging right should produce positive Y rotation
+      expect(cube.scrollRotationY()).toBeGreaterThan(0);
+      document.dispatchEvent(new PointerEvent('pointerup', { clientX: 200, clientY: 100 }));
+    });
+
+    it('should invert horizontal drag when X rotation is ~180° (upside down)', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      fixture.detectChanges();
+
+      // Set cube upside down: activeFace=0, scrollRotation=0, idleRotation=180
+      // totalX = 0*-90 + 0 + 180 = 180 → cos(180°) = -1 → dragFlipY = -1
+      cube.scrollProgress.set(1);
+      cube.scrollRotation.set(0);
+      cube.scrollRotationY.set(0);
+      cube.activeFace.set(0);
+      (cube as any).idleRotation = 180;
+
+      cube.onPointerDown(new PointerEvent('pointerdown', { clientX: 100, clientY: 100 }));
+      document.dispatchEvent(new PointerEvent('pointermove', { clientX: 200, clientY: 100 }));
+
+      // Dragging right should now produce negative Y rotation (inverted)
+      expect(cube.scrollRotationY()).toBeLessThan(0);
+      document.dispatchEvent(new PointerEvent('pointerup', { clientX: 200, clientY: 100 }));
+    });
+
+    it('should invert vertical drag when Y rotation is ~180° (showing back)', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      fixture.detectChanges();
+
+      // totalY = 180 → cos(180°) = -1 → dragFlipX = -1
+      cube.scrollProgress.set(1);
+      cube.scrollRotation.set(0);
+      cube.scrollRotationY.set(180);
+      cube.activeFace.set(0);
+
+      cube.onPointerDown(new PointerEvent('pointerdown', { clientX: 100, clientY: 100 }));
+      document.dispatchEvent(new PointerEvent('pointermove', { clientX: 100, clientY: 200 }));
+
+      // Dragging down should now produce positive X rotation (inverted from normal)
+      expect(cube.scrollRotation()).toBeGreaterThan(0);
+      document.dispatchEvent(new PointerEvent('pointerup', { clientX: 100, clientY: 200 }));
+    });
+
+    it('should apply flip factors to momentum direction', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      fixture.detectChanges();
+
+      // Set cube upside down
+      cube.scrollRotation.set(0);
+      cube.scrollRotationY.set(0);
+      cube.activeFace.set(0);
+      (cube as any).idleRotation = 180;
+
+      // Drag right → momentum Y should be inverted
+      simulateDragForFlip(cube, { startX: 100, startY: 100, endX: 200, endY: 100 });
+
+      expect((cube as any).momentumVelocityY).toBeLessThan(0);
+    });
+  });
+
   // ── Cleanup ─────────────────────────────────────────────────────────────────
 
   describe('ngOnDestroy', () => {
