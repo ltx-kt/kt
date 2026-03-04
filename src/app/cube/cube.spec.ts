@@ -42,7 +42,7 @@ describe('Cube', () => {
       fixture.detectChanges();
       const headings = fixture.nativeElement.querySelectorAll('.face-heading');
       const texts = Array.from(headings).map((h: any) => h.textContent.trim());
-      expect(texts).toEqual(['About', 'Projects', 'Contact', '?', '?']);
+      expect(texts).toEqual(['Work Experience', 'Projects', 'Contact', '?', '?']);
     });
 
     it('should render the GitHub link with correct href', () => {
