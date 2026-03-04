@@ -1,10 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { Cube } from './cube/cube';
+import { Banner } from './banner/banner';
 
 @Component({
   selector: 'app-root',
-  imports: [Cube],
+  imports: [Cube, Banner],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App {}
+export class App {
+  cubeExpanded = signal(false);
+}

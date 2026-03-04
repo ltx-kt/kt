@@ -1,4 +1,4 @@
-import { Component, computed, signal, HostListener, ElementRef, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, computed, signal, output, effect, HostListener, ElementRef, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { Home } from '../faces/home/home';
 import { About } from '../faces/about/about';
 import { Projects } from '../faces/projects/projects';
@@ -77,6 +77,11 @@ export class Cube implements AfterViewInit, OnDestroy {
   idleRotationSignal = signal(0);
 
   isExpanded = computed(() => this.scrollProgress() === 0);
+  expandedChange = output<boolean>();
+
+  constructor() {
+    effect(() => this.expandedChange.emit(this.isExpanded()));
+  }
 
   @ViewChild('cubeEl') cubeEl!: ElementRef<HTMLElement>;
 
