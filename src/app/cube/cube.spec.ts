@@ -195,7 +195,8 @@ describe('Cube', () => {
       vi.useRealTimers();
     });
 
-    it('should reset scrollRotation and idleRotationSignal', () => {
+    it('should reset scrollRotation and idleRotationSignal after rAF', () => {
+      vi.useFakeTimers();
       const fixture = TestBed.createComponent(Cube);
       const cube = fixture.componentInstance;
       fixture.detectChanges();
@@ -204,11 +205,14 @@ describe('Cube', () => {
       cube.idleRotationSignal.set(10);
 
       cube.onFaceClick(0);
-      expect(cube.scrollRotation()).toBe(0);
       expect(cube.idleRotationSignal()).toBe(0);
+      vi.advanceTimersByTime(16);
+      expect(cube.scrollRotation()).toBe(0);
+      vi.useRealTimers();
     });
 
-    it('should reset Y rotation to 0', () => {
+    it('should reset Y rotation to 0 after rAF', () => {
+      vi.useFakeTimers();
       const fixture = TestBed.createComponent(Cube);
       const cube = fixture.componentInstance;
       fixture.detectChanges();
@@ -216,7 +220,9 @@ describe('Cube', () => {
       cube.scrollRotationY.set(50);
 
       cube.onFaceClick(0);
+      vi.advanceTimersByTime(16);
       expect(cube.scrollRotationY()).toBe(0);
+      vi.useRealTimers();
     });
 
     it('should not zoom in when scrollProgress is below 0.5', () => {

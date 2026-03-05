@@ -250,31 +250,37 @@ export class Cube implements AfterViewInit, OnDestroy {
   }
 
   onFaceClick(faceIndex: number): void {
-    if (this.dragMoved) {
-      this.dragMoved = false;
-      return;
-    }
+    if (this.dragMoved) { this.dragMoved = false; return; }
     if (this.scrollProgress() < 0.5 || this.isAnimating()) return;
 
+    // Stop momentum & auto-rotate
     this.momentumVelocityX = 0;
     this.momentumVelocityY = 0;
     this.momentumLastTime = 0;
-
     this.pauseAutoRotate();
 
-    // Snap to the clicked face right-side up instantly (no transition)
+    // Calculate current total rotation from all sources
+    const currentTotalX = this.activeFace() * -90 + this.scrollRotation() + this.idleRotation;
+    const targetX = faceIndex * -90;
+
+    // Shortest-path delta normalized to [-180, 180]
+    const deltaX = ((currentTotalX - targetX) % 360 + 540) % 360 - 180;
+    const deltaY = ((this.scrollRotationY() % 360) + 540) % 360 - 180;
+
+    // Fold delta into scrollRotation (no visual change yet)
     this.activeFace.set(faceIndex);
-    this.scrollRotation.set(0);
+    this.scrollRotation.set(deltaX);
     this.idleRotation = 0;
     this.idleRotationSignal.set(0);
-    this.scrollRotationY.set(0);
+    this.scrollRotationY.set(deltaY);
 
-    // Wait one frame for the snap to render, then animate only the zoom
+    // Next frame: enable transition and animate spin + zoom together
     requestAnimationFrame(() => {
       this.isAnimating.set(true);
+      this.scrollRotation.set(0);
+      this.scrollRotationY.set(0);
       this.scrollProgress.set(0);
 
-      // Fallback in case transitionend doesn't fire
       if (this.animTimerId) clearTimeout(this.animTimerId);
       this.animTimerId = setTimeout(() => this.clearAnimating(), 700);
     });
