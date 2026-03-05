@@ -264,26 +264,17 @@ export class Cube implements AfterViewInit, OnDestroy {
 
     this.pauseAutoRotate();
 
-    // Snap to the clicked face right-side up instantly (no transition)
-    this.activeFace.set(faceIndex);
-    this.scrollRotation.set(0);
-    this.idleRotation = 0;
-    this.idleRotationSignal.set(0);
-    this.scrollRotationY.set(0);
-
-    // Flash black, then zoom after the blackout
+    // Flash black, then snap to expanded face
     this.isBlinking.set(true);
     if (this.animTimerId) clearTimeout(this.animTimerId);
     this.animTimerId = setTimeout(() => {
+      this.activeFace.set(faceIndex);
+      this.scrollRotation.set(0);
+      this.idleRotation = 0;
+      this.idleRotationSignal.set(0);
+      this.scrollRotationY.set(0);
       this.isBlinking.set(false);
-      requestAnimationFrame(() => {
-        this.isAnimating.set(true);
-        this.scrollProgress.set(0);
-
-        // Fallback in case transitionend doesn't fire
-        if (this.animTimerId) clearTimeout(this.animTimerId);
-        this.animTimerId = setTimeout(() => this.clearAnimating(), 700);
-      });
-    }, 150);
+      this.scrollProgress.set(0);
+    }, 300);
   }
 }
