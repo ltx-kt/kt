@@ -84,6 +84,23 @@
   background: linear-gradient(135deg, #2a451a 0%, #451a2a 50%, #1a2a45 100%);
 }
 
+// ─── Blackout overlay ─────────────────────────────────────────────────────────
+
+.scene__blackout {
+  position: fixed;
+  inset: 0;
+  background: black;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+
+  &--active {
+    opacity: 1;
+    transition: opacity 0.15s ease-in;
+  }
+}
+
 // ─── Back button ──────────────────────────────────────────────────────────────
 
 @keyframes back-button-in {

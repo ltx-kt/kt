@@ -176,12 +176,23 @@ describe('Cube', () => {
       cube.scrollProgress.set(1);
 
       cube.onFaceClick(0);
-      vi.advanceTimersByTime(16);
+      expect(cube.scrollProgress()).toBe(1); // still 1 before timeout
+      vi.advanceTimersByTime(300);
       expect(cube.scrollProgress()).toBe(0);
       vi.useRealTimers();
     });
 
-    it('should set isAnimating to true after snap renders', () => {
+    it('should set isBlinking to true immediately on click', () => {
+      const fixture = TestBed.createComponent(Cube);
+      const cube = fixture.componentInstance;
+      fixture.detectChanges();
+      cube.scrollProgress.set(1);
+
+      cube.onFaceClick(0);
+      expect(cube.isBlinking()).toBe(true);
+    });
+
+    it('should clear isBlinking after 300ms timeout', () => {
       vi.useFakeTimers();
       const fixture = TestBed.createComponent(Cube);
       const cube = fixture.componentInstance;
@@ -189,13 +200,14 @@ describe('Cube', () => {
       cube.scrollProgress.set(1);
 
       cube.onFaceClick(0);
-      expect(cube.isAnimating()).toBe(false);
-      vi.advanceTimersByTime(16);
-      expect(cube.isAnimating()).toBe(true);
+      expect(cube.isBlinking()).toBe(true);
+      vi.advanceTimersByTime(300);
+      expect(cube.isBlinking()).toBe(false);
       vi.useRealTimers();
     });
 
-    it('should reset scrollRotation and idleRotationSignal', () => {
+    it('should reset scrollRotation and idleRotationSignal after 300ms', () => {
+      vi.useFakeTimers();
       const fixture = TestBed.createComponent(Cube);
       const cube = fixture.componentInstance;
       fixture.detectChanges();
@@ -204,11 +216,15 @@ describe('Cube', () => {
       cube.idleRotationSignal.set(10);
 
       cube.onFaceClick(0);
+      expect(cube.scrollRotation()).toBe(45); // unchanged before timeout
+      vi.advanceTimersByTime(300);
       expect(cube.scrollRotation()).toBe(0);
       expect(cube.idleRotationSignal()).toBe(0);
+      vi.useRealTimers();
     });
 
-    it('should reset Y rotation to 0', () => {
+    it('should reset Y rotation to 0 after 300ms', () => {
+      vi.useFakeTimers();
       const fixture = TestBed.createComponent(Cube);
       const cube = fixture.componentInstance;
       fixture.detectChanges();
@@ -216,7 +232,10 @@ describe('Cube', () => {
       cube.scrollRotationY.set(50);
 
       cube.onFaceClick(0);
+      expect(cube.scrollRotationY()).toBe(50); // unchanged before timeout
+      vi.advanceTimersByTime(300);
       expect(cube.scrollRotationY()).toBe(0);
+      vi.useRealTimers();
     });
 
     it('should not zoom in when scrollProgress is below 0.5', () => {
@@ -240,7 +259,8 @@ describe('Cube', () => {
       expect(cube.scrollProgress()).toBe(1);
     });
 
-    it('should set activeFace to the clicked face index', () => {
+    it('should set activeFace to the clicked face index after 300ms', () => {
+      vi.useFakeTimers();
       const fixture = TestBed.createComponent(Cube);
       const cube = fixture.componentInstance;
       fixture.detectChanges();
@@ -248,22 +268,9 @@ describe('Cube', () => {
       cube.activeFace.set(0);
 
       cube.onFaceClick(2);
+      expect(cube.activeFace()).toBe(0); // unchanged before timeout
+      vi.advanceTimersByTime(300);
       expect(cube.activeFace()).toBe(2);
-    });
-
-    it('should clear isAnimating after fallback timeout', () => {
-      vi.useFakeTimers();
-      const fixture = TestBed.createComponent(Cube);
-      const cube = fixture.componentInstance;
-      fixture.detectChanges();
-      cube.scrollProgress.set(1);
-
-      cube.onFaceClick(0);
-      vi.advanceTimersByTime(16);
-      expect(cube.isAnimating()).toBe(true);
-
-      vi.advanceTimersByTime(700);
-      expect(cube.isAnimating()).toBe(false);
       vi.useRealTimers();
     });
   });
