@@ -2,32 +2,32 @@
   <div class="cube" [class.cube--expanded]="isExpanded()" #cubeEl [style.transform]="cubeTransform()">
 
     <!-- Front: Home -->
-    <div class="cube__face cube__face--front" (click)="onFaceClick(0)">
+    <div class="cube__face cube__face--front" (click)="onFaceClick(0)" [hidden]="zoomingFace() !== -1 && zoomingFace() !== 0">
       <app-home />
     </div>
 
     <!-- Bottom: About -->
-    <div class="cube__face cube__face--bottom" (click)="onFaceClick(1)">
+    <div class="cube__face cube__face--bottom" (click)="onFaceClick(1)" [hidden]="zoomingFace() !== -1 && zoomingFace() !== 1">
       <app-about />
     </div>
 
     <!-- Back: Projects -->
-    <div class="cube__face cube__face--back" (click)="onFaceClick(2)">
+    <div class="cube__face cube__face--back" (click)="onFaceClick(2)" [hidden]="zoomingFace() !== -1 && zoomingFace() !== 2">
       <app-projects />
     </div>
 
     <!-- Top: Contact -->
-    <div class="cube__face cube__face--top" (click)="onFaceClick(3)">
+    <div class="cube__face cube__face--top" (click)="onFaceClick(3)" [hidden]="zoomingFace() !== -1 && zoomingFace() !== 3">
       <app-contact />
     </div>
 
     <!-- Left: Placeholder -->
-    <div class="cube__face cube__face--left">
+    <div class="cube__face cube__face--left" [hidden]="zoomingFace() !== -1">
       <app-placeholder />
     </div>
 
     <!-- Right: Placeholder -->
-    <div class="cube__face cube__face--right">
+    <div class="cube__face cube__face--right" [hidden]="zoomingFace() !== -1">
       <app-placeholder />
     </div>
 

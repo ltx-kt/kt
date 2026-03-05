@@ -76,6 +76,8 @@ export class Cube implements AfterViewInit, OnDestroy {
 
   idleRotationSignal = signal(0);
 
+  zoomingFace = signal(-1);
+
   isExpanded = computed(() => this.scrollProgress() === 0);
   expandedChange = output<boolean>();
 
@@ -107,6 +109,9 @@ export class Cube implements AfterViewInit, OnDestroy {
     if (this.animTimerId) {
       clearTimeout(this.animTimerId);
       this.animTimerId = null;
+    }
+    if (this.scrollProgress() === 1) {
+      this.zoomingFace.set(-1);
     }
   }
 
@@ -273,6 +278,8 @@ export class Cube implements AfterViewInit, OnDestroy {
     this.idleRotation = 0;
     this.idleRotationSignal.set(0);
     this.scrollRotationY.set(deltaY);
+
+    this.zoomingFace.set(faceIndex);
 
     // Next frame: enable transition and animate spin + zoom together
     requestAnimationFrame(() => {
