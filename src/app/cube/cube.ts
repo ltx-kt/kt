@@ -76,6 +76,8 @@ export class Cube implements AfterViewInit, OnDestroy {
 
   idleRotationSignal = signal(0);
 
+  isBlinking = signal(false);
+
   isExpanded = computed(() => this.scrollProgress() === 0);
   expandedChange = output<boolean>();
 
@@ -269,14 +271,19 @@ export class Cube implements AfterViewInit, OnDestroy {
     this.idleRotationSignal.set(0);
     this.scrollRotationY.set(0);
 
-    // Wait one frame for the snap to render, then animate only the zoom
-    requestAnimationFrame(() => {
-      this.isAnimating.set(true);
-      this.scrollProgress.set(0);
+    // Flash black, then zoom after the blackout
+    this.isBlinking.set(true);
+    if (this.animTimerId) clearTimeout(this.animTimerId);
+    this.animTimerId = setTimeout(() => {
+      this.isBlinking.set(false);
+      requestAnimationFrame(() => {
+        this.isAnimating.set(true);
+        this.scrollProgress.set(0);
 
-      // Fallback in case transitionend doesn't fire
-      if (this.animTimerId) clearTimeout(this.animTimerId);
-      this.animTimerId = setTimeout(() => this.clearAnimating(), 700);
-    });
+        // Fallback in case transitionend doesn't fire
+        if (this.animTimerId) clearTimeout(this.animTimerId);
+        this.animTimerId = setTimeout(() => this.clearAnimating(), 700);
+      });
+    }, 150);
   }
 }
